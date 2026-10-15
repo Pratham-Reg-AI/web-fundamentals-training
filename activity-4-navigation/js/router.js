@@ -12,18 +12,48 @@ import { NotFoundView } from "./views/not-found.js";
 
 const app = document.querySelector("#app");
 
+function setActiveNav(currentRoute) {
+  const links = document.querySelectorAll(".nav-list a");
+
+  links.forEach((link) => {
+    const route = link.dataset.route ?? "";
+    const isCurrent = route === currentRoute;
+
+    if (isCurrent) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  });
+}
+
 export function router() {
   const hash = location.hash || "#/";
+  const [_, page = "", param = ""] = hash.split("/");
+  const normalizedPage = page || "";
 
-  // TODO 1: split the hash into parts.
-  //   "#/product/7".split("/")  →  ["#", "product", "7"]
-  const page = "";   // replace me
-  const param = "";  // replace me
+  if (normalizedPage === "") {
+    setActiveNav("");
+    return ListView(app);
+  }
 
-  // TODO 2: return the right view for each page.
-  //   ""        → ListView(app)
-  //   "product" → DetailView(app, Number(param))
-  //   "about"   → AboutView(app)
-  //   otherwise → NotFoundView(app)
-  return ListView(app);
+  if (normalizedPage === "about") {
+    setActiveNav("about");
+    return AboutView(app);
+  }
+
+  if (normalizedPage === "product") {
+    const id = Number(param);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      setActiveNav("");
+      return NotFoundView(app);
+    }
+
+    setActiveNav("");
+    return DetailView(app, id);
+  }
+
+  setActiveNav("");
+  return NotFoundView(app);
 }

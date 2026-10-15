@@ -1,17 +1,51 @@
-// detail.js: screen 2, one product, fetched by the id in the URL (#/product/7).
+
 import { getProduct } from "../api.js";
 
 export async function DetailView(app, id) {
-  // TODO 1: LOADING state. Show a back link and "Loading product…"
+  app.innerHTML = `
+    <a href="#/" class="back-link">← Back to products</a>
+    <p class="status" role="status">Loading product…</p>
+  `;
 
   try {
-    // TODO 2: const product = await getProduct(id);
+    const product = await getProduct(id);
+    const stock = product.stock > 0 ? `${product.stock} in stock` : "Out of stock";
+    const rating = product.rating?.toFixed(1) ?? "0.0";
+    const image = product.images?.[0] ?? product.thumbnail ?? "";
 
-    // TODO 3: SUCCESS. Render image, title, price, description, rating, stock
-    //         and a "← Back to products" link (href="#/")
-    //         Update document.title too.
+    document.title = `${product.title} | Cartly`;
+    app.innerHTML = `
+      <a href="#/" class="back-link">← Back to products</a>
+      <article class="detail" aria-live="polite">
+        <img src="${image}" alt="${product.title}" width="600" height="600">
+        <div>
+          <p class="card-category">${product.category ?? "Uncategorized"} · ${product.brand ?? "Cartly"}</p>
+          <h1 id="page-title" tabindex="-1">${product.title}</h1>
+          <p class="price">$${Number(product.price).toFixed(2)}</p>
+          <p>${product.description}</p>
+          <dl class="facts">
+            <dt>Rating</dt>
+            <dd>${rating} / 5</dd>
+            <dt>Stock</dt>
+            <dd class="${product.stock === 0 ? "stock-low" : ""}">${stock}</dd>
+          </dl>
+        </div>
+      </article>
+    `;
+
+    const heading = app.querySelector("#page-title");
+    heading?.focus();
   } catch (error) {
-    // TODO 4: ERROR. Try #/product/99999 to test it.
-    //         Show "Product not found" and a link back to #/
+    document.title = "Product not found | Cartly";
+    app.innerHTML = `
+      <section class="state" aria-live="polite">
+        <h1 id="page-title" tabindex="-1">Product not found</h1>
+        <p>We couldn’t find that product.</p>
+        <a href="#/" class="btn">← Back to products</a>
+      </section>
+    `;
+
+    const heading = app.querySelector("#page-title");
+    heading?.focus();
   }
 }
